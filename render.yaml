@@ -1,0 +1,28 @@
+# Render free-tier deployment — DecentralizedMelody (ScrollVerse music storefront)
+# Zero code changes needed except the PORT fix already applied to server/index.ts.
+# Deploy: Render dashboard → New → Web Service → connect the repo → Render reads this file.
+services:
+  - type: web
+    name: decentralized-melody
+    env: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # DATABASE_URL: set in the Render dashboard (sync: false = dashboard-only).
+      # Source: a FREE Neon Postgres database (neon.tech free tier) — the Replit
+      # database was Neon, and server/storage-db.ts uses @neondatabase/serverless.
+      # Without it the server may fail at import (neon(undefined) is untested)
+      # and the track/NFT routes fall back to in-memory demo data only.
+      - key: DATABASE_URL
+        sync: false
+      # SESSION_SECRET: set in the Render dashboard to any long random string.
+      - key: SESSION_SECRET
+        sync: false
+    # Stripe stays DISABLED by design: no STRIPE_SECRET_KEY is ever set.
+    # server/payments.ts returns 410 for all Stripe routes; PayPal / Cash App /
+    # Coinbase rails are test/demo only. No real payments or mints.
+    # NOTE: Render free services spin down after ~15 min idle; first load after
+    # idle can take ~30-60s to wake. 750 free instance-hours/month covers one service.
